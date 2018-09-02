@@ -284,13 +284,25 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
     return nil;
 }
 
+-(NSDictionary *)formValuesIncludingHidden
+{
+    return [self formValuesWithHidden:YES];
+}
+
 -(NSDictionary *)formValues
 {
-    NSMutableDictionary * result = [NSMutableDictionary dictionary];
-    for (XLFormSectionDescriptor * section in self.formSections) {
+    return [self formValuesWithHidden:NO];
+}
+
+-(NSDictionary *)formValuesWithHidden:(BOOL)includeHidden
+{
+    NSArray* sections = includeHidden ? self.allSections : self.formSections;
+    NSMutableDictionary* result = [NSMutableDictionary dictionary];
+    for (XLFormSectionDescriptor * section in sections) {
+        NSArray* rows = includeHidden ? section.allRows : section.formRows;
         if (section.multivaluedTag.length > 0){
-            NSMutableArray * multiValuedValuesArray = [NSMutableArray new];
-            for (XLFormRowDescriptor * row in section.formRows) {
+            NSMutableArray* multiValuedValuesArray = [NSMutableArray new];
+            for (XLFormRowDescriptor * row in rows) {
                 if (row.value){
                     [multiValuedValuesArray addObject:row.value];
                 }
@@ -298,7 +310,7 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
             [result setObject:multiValuedValuesArray forKey:section.multivaluedTag];
         }
         else{
-            for (XLFormRowDescriptor * row in section.formRows) {
+            for (XLFormRowDescriptor * row in rows) {
                 if (row.tag.length > 0){
                     [result setObject:(row.value ?: [NSNull null]) forKey:row.tag];
                 }
@@ -307,14 +319,47 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
     }
     return result;
 }
+-(nonnull NSDictionary *)httpParametersIncludingHidden:(nonnull XLFormViewController *)formViewController;
+{
+    return [self httpParametersWithHidden:formViewController includeHidden:YES];
+}
 
 -(NSDictionary *)httpParameters:(XLFormViewController *)formViewController
 {
-    NSMutableDictionary * result = [NSMutableDictionary dictionary];
-    for (XLFormSectionDescriptor * section in self.formSections) {
+    return [self httpParametersWithHidden:formViewController includeHidden:NO];
+//    NSMutableDictionary * result = [NSMutableDictionary dictionary];
+//    for (XLFormSectionDescriptor * section in self.formSections) {
+//        if (section.multivaluedTag.length > 0){
+//            NSMutableArray * multiValuedValuesArray = [NSMutableArray new];
+//            for (XLFormRowDescriptor * row in section.formRows) {
+//                if ([row.value valueData]){
+//                    [multiValuedValuesArray addObject:[row.value valueData]];
+//                }
+//            }
+//            [result setObject:multiValuedValuesArray forKey:section.multivaluedTag];
+//        }
+//        else{
+//            for (XLFormRowDescriptor * row in section.formRows) {
+//                NSString * httpParameterKey = nil;
+//                if ((httpParameterKey = [self httpParameterKeyForRow:row cell:[row cellForFormController:formViewController]])){
+//                    id parameterValue = [row.value valueData] ?: [NSNull null];
+//                    [result setObject:parameterValue forKey:httpParameterKey];
+//                }
+//            }
+//        }
+//    }
+//    return result;
+}
+
+-(NSDictionary *)httpParametersWithHidden:(XLFormViewController *)formViewController includeHidden:(BOOL)includeHidden
+{
+    NSArray* sections = includeHidden ? self.allSections : self.formSections;
+    NSMutableDictionary* result = [NSMutableDictionary dictionary];
+    for (XLFormSectionDescriptor * section in sections) {
+        NSArray* rows = includeHidden ? section.allRows : section.formRows;
         if (section.multivaluedTag.length > 0){
-            NSMutableArray * multiValuedValuesArray = [NSMutableArray new];
-            for (XLFormRowDescriptor * row in section.formRows) {
+            NSMutableArray* multiValuedValuesArray = [NSMutableArray new];
+            for (XLFormRowDescriptor * row in rows) {
                 if ([row.value valueData]){
                     [multiValuedValuesArray addObject:[row.value valueData]];
                 }
@@ -322,7 +367,7 @@ NSString * const XLValidationStatusErrorKey = @"XLValidationStatusErrorKey";
             [result setObject:multiValuedValuesArray forKey:section.multivaluedTag];
         }
         else{
-            for (XLFormRowDescriptor * row in section.formRows) {
+            for (XLFormRowDescriptor * row in rows) {
                 NSString * httpParameterKey = nil;
                 if ((httpParameterKey = [self httpParameterKeyForRow:row cell:[row cellForFormController:formViewController]])){
                     id parameterValue = [row.value valueData] ?: [NSNull null];
