@@ -101,6 +101,8 @@ typedef void(^XLOnChangeBlock)(id __nullable oldValue,id __nullable newValue,XLF
 
 @property (null_unspecified) id leftRightSelectorLeftOptionSelected;
 
+@property(nonatomic, nullable) NSArray *leftButtons;
+@property(nonatomic, nullable) NSArray *rigthButtons;
 
 // =====================================
 // Deprecated
